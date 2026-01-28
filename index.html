@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CCC – Multiplikasjon & Divisjon (1–12)</title>
+  <style>
+    :root{
+      --bg:#0b1020; --card:#121a33; --muted:#9fb0ff; --text:#e9ecff;
+      --good:#27d68b; --bad:#ff4d6d; --warn:#ffd166; --line:rgba(255,255,255,.12);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background: radial-gradient(1200px 800px at 30% 10%, #1b2a6a 0%, var(--bg) 55%);
+      color:var(--text);
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:20px}
+    h1{margin:0 0 6px;font-size:22px}
+    .sub{margin:0 0 12px;color:rgba(233,236,255,.8);font-size:13px}
+
+    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+    @media (max-width:980px){.grid{grid-template-columns:1fr}}
+
+    .card{
+      background:rgba(18,26,51,.92);
+      border:1px solid var(--line);
+      border-radius:16px; padding:14px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .row.space{justify-content:space-between}
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid var(--line); background:rgba(255,255,255,.04);
+      color:rgba(233,236,255,.9); font-size:13px
+    }
+    .btn{
+      appearance:none; border:0; border-radius:12px;
+      padding:10px 12px; font-weight:800;
+      color:white; background:linear-gradient(180deg,#3a4cff,#2236ff);
+      cursor:pointer;
+      user-select:none;
+    }
+    .btn.secondary{background:rgba(255,255,255,.08); border:1px solid var(--line)}
+    .btn.danger{background:rgba(255,77,109,.12); border:1px solid rgba(255,77,109,.35); color:var(--text)}
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+    .small{font-size:13px;color:rgba(233,236,255,.75)}
+    .hint{color:var(--muted)}
+
+    .task{
+      position:relative;
+      border:1px dashed rgba(255,255,255,.2);
+      border-radius:16px; padding:14px;
+      background:rgba(0,0,0,.10);
+      overflow:hidden;
+      min-height:270px;
+    }
+    .eq{
+      font-size:44px; font-weight:950; letter-spacing:1px;
+      text-align:center; margin:10px 0 6px;
+      user-select:none;
+    }
+
+    /* COVER: dekker bare regnestykket (ikke input) */
+    .coverEq{
+      position:absolute;
+      left:14px; right:14px;
+      top:14px;
+      height:88px;
+      border-radius:14px;
+      background:rgba(5,8,20,.82);
+      backdrop-filter: blur(10px);
+      border:1px solid rgba(255,255,255,.16);
+      display:flex; align-items:center; justify-content:center;
+      overflow:hidden;
+      z-index:1;
+    }
+    .coverEq.hidden{display:none}
+    .curtain{
+      position:absolute; inset:0;
+      background:linear-gradient(90deg, rgba(0,0,0,.0) 0%, rgba(0,0,0,.35) 20%, rgba(0,0,0,.55) 50%, rgba(0,0,0,.35) 80%, rgba(0,0,0,.0) 100%);
+      opacity:.6;
+      mix-blend-mode: overlay;
+    }
+    .coverEq .text{position:relative;text-align:center;padding:10px 12px;max-width:560px;}
+    .eq.blurred{filter: blur(10px);opacity:.15;}
+
+    /* “Vis”-flash */
+    .revealFlash{
+      position:absolute;
+      left:14px; right:14px;
+      top:14px;
+      height:88px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.06);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:3;
+      backdrop-filter: blur(2px);
+    }
+    .revealFlash.show{display:flex}
+    .revealFlash .inner{font-weight:950;font-size:28px;letter-spacing:1px;text-align:center}
+    .revealFlash .sub{margin-top:6px;font-size:12px;font-weight:650;opacity:.85;text-align:center}
+
+    .stage{
+      display:flex; justify-content:center; gap:8px; flex-wrap:wrap;
+      margin-top:12px; position:relative; z-index:2;
+    }
+    input[type="text"]{
+      width:min(620px, 100%);
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      font-size:20px;
+      outline:none;
+    }
+    input[type="text"]:focus{border-color:rgba(159,176,255,.65)}
+
+    .feedback{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      position:relative; z-index:2;
+    }
+    .feedback.good{border-color:rgba(39,214,139,.45); background:rgba(39,214,139,.10)}
+    .feedback.bad{border-color:rgba(255,77,109,.45); background:rgba(255,77,109,.10)}
+    .feedback.warn{border-color:rgba(255,209,102,.45); background:rgba(255,209,102,.10)}
+
+    /* Symbol-tastatur */
+    .kbdRow{
+      margin-top:10px;
+      display:flex;
+      justify-content:center;
+      gap:8px;
+      flex-wrap:wrap;
+      position:relative;
+      z-index:2;
+    }
+    .symBtn{
+      min-width:54px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      font-weight:950;
+      font-size:20px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .symBtn:active{transform: translateY(1px)}
+    .symBtn:disabled{opacity:.5; cursor:not-allowed}
+    .symBtn.danger{
+      border-color:rgba(255,77,109,.45);
+      background:rgba(255,77,109,.10);
+    }
+
+    .selectbox{
+      border:1px solid var(--line); border-radius:14px; padding:10px;
+      background:rgba(0,0,0,.12);
+      max-height:420px; overflow:auto;
+    }
+    .family{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px; padding:8px 10px; border-radius:12px;
+      border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03);
+      margin-bottom:8px;
+    }
+    .family label{display:flex;gap:10px;align-items:center;cursor:pointer;width:100%}
+    .family code{font-size:14px;color:rgba(233,236,255,.95)}
+    .family .meta{font-size:12px;color:rgba(233,236,255,.65)}
+    .tag{
+      font-size:12px; font-weight:900;
+      padding:4px 8px; border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      white-space:nowrap;
+    }
+    .tag.green{border-color:rgba(39,214,139,.35); background:rgba(39,214,139,.10); color:rgba(39,214,139,.95)}
+    .tag.yellow{border-color:rgba(255,209,102,.35); background:rgba(255,209,102,.10); color:rgba(255,209,102,.95)}
+    .tag.red{border-color:rgba(255,77,109,.35); background:rgba(255,77,109,.10); color:rgba(255,77,109,.95)}
+    .tag.lock{opacity:.7}
+
+    .dash{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    @media (max-width:980px){.dash{grid-template-columns:1fr}}
+    .box{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+      background:rgba(255,255,255,.03);
+    }
+    .k{font-size:12px;color:rgba(233,236,255,.7)}
+    .v{font-weight:950}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>CCC – Multiplikasjon & divisjon (1–12)</h1>
+    <div class="sub">
+      0 er utelatt. Tidtaker måler <b>Cover</b>-fasen (fra skjult til riktig).
+    </div>
+
+    <div class="grid">
+      <!-- VENSTRE: ØKT -->
+      <div class="card">
+        <div class="row space">
+          <div class="row">
+            <span class="pill">Steg: <b id="stepName">Velg familier</b></span>
+            <span class="pill">Poeng: <b id="score">0</b></span>
+            <span class="pill">Riktig på rad: <b id="streak">0</b></span>
+            <span class="pill">Best: <b id="best">0</b></span>
+          </div>
+          <div class="row">
+            <button class="btn secondary" id="btnNew" title="Ny oppgave" disabled>Ny</button>
+            <button class="btn danger" id="btnReset" title="Nullstill økt">Nullstill</button>
+          </div>
+        </div>
+
+        <div class="dash">
+          <div class="box">
+            <div class="k">⏱️ Tidtaker</div>
+            <div class="row space" style="margin-top:6px">
+              <div class="v"><span id="timer">0.0</span> s</div>
+              <button class="btn secondary" id="btnTimerToggle" style="padding:8px 10px;border-radius:10px">På</button>
+            </div>
+            <div class="k" style="margin-top:8px">Måler cover-tid.</div>
+          </div>
+          <div class="box">
+            <div class="k">🎯 Anbefalt neste</div>
+            <div class="v" id="recommendation" style="margin-top:6px">–</div>
+            <div class="k" style="margin-top:8px">Basert på feil + tid + nivå.</div>
+          </div>
+        </div>
+
+        <div class="box" style="margin-top:10px">
+          <div class="row space">
+            <div>
+              <div class="k">🧱 Nivå & progresjon</div>
+              <div class="v">Nivå <span id="level">1</span></div>
+            </div>
+            <button class="btn secondary" id="btnProgressToggle" style="padding:8px 10px;border-radius:10px">Progresjon: På</button>
+          </div>
+          <div class="k" style="margin-top:8px">
+            Nivå 1: maks faktor ≤ 5 · Nivå 2: ≤ 8 · Nivå 3: ≤ 12
+            <br/>Nytt nivå låses opp når <b>80%</b> av familiene i nivået er grønne.
+          </div>
+        </div>
+
+        <div class="task" style="margin-top:12px">
+          <div class="eq" id="equation">—</div>
+
+          <div id="coverEq" class="coverEq hidden" aria-hidden="true">
+            <div class="curtain"></div>
+            <div class="text">
+              <div style="font-weight:950;font-size:18px">Cover</div>
+              <div class="small" style="margin-top:4px">
+                Regnestykket er skjult. Skriv det under og trykk <b>Sjekk</b>.
+              </div>
+            </div>
+          </div>
+
+          <div id="revealFlash" class="revealFlash" aria-hidden="true">
+            <div style="padding:8px 10px">
+              <div class="inner" id="revealText">—</div>
+              <div class="sub">Vises kort – så skjules det igjen</div>
+            </div>
+          </div>
+
+          <div class="stage">
+            <input id="answer" type="text" placeholder="Skriv regnestykket her" disabled />
+            <button class="btn" id="btnCheck" disabled>Sjekk</button>
+            <button class="btn secondary" id="btnShow" disabled title="Vis regnestykket kort">Vis</button>
+          </div>
+
+          <div class="kbdRow">
+            <button class="symBtn" id="symMul" disabled>×</button>
+            <button class="symBtn" id="symDiv" disabled>÷</button>
+            <button class="symBtn" id="symEq" disabled>=</button>
+            <button class="symBtn danger" id="symBksp" disabled>⌫</button>
+            <button class="symBtn danger" id="symClear" disabled>C</button>
+          </div>
+
+          <div id="feedback" class="feedback" style="display:none"></div>
+        </div>
+
+        <div class="small" style="margin-top:10px">
+          Tips: skriv tall med tastaturet. Bruk knappene <b>×</b>, <b>÷</b> og <b>=</b> for tegn.
+        </div>
+      </div>
+
+      <!-- HØYRE: VELG FAMILIER -->
+      <div class="card">
+        <div class="row space">
+          <div>
+            <div style="font-weight:950">Velg “gangfamilier” (1–12)</div>
+            <div class="small">En familie = (a, b, a×b). Du får både × og ÷-oppgaver.</div>
+          </div>
+          <div class="row">
+            <button class="btn secondary" id="btnPick3">Plukk 3 tilfeldig</button>
+            <button class="btn secondary" id="btnClear">Tøm</button>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <span class="pill">Valgt: <b id="selectedCount">0</b></span>
+          <span class="pill">Oppgaver i kø: <b id="queueCount">0</b></span>
+        </div>
+
+        <div class="selectbox" id="familyList" style="margin-top:10px"></div>
+
+        <div class="row" style="margin-top:12px">
+          <button class="btn" id="btnStart">Start økt</button>
+          <span class="small hint" id="startHint">Velg minst 1 familie først.</span>
+        </div>
+
+        <div class="box" style="margin-top:12px">
+          <div class="k">Status-farger</div>
+          <div class="small" style="margin-top:6px">
+            <span class="tag green">Grønn</span> = rask og feilfri (streak ≥ 5 og snitt ≤ 5.0s)
+            <br/>
+            <span class="tag yellow">Gul</span> = på vei
+            <br/>
+            <span class="tag red">Rød</span> = mye feil eller treg (feilrate ≥ 40% eller snitt ≥ 10.0s)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------------------------
+    // STORAGE
+    // ---------------------------
+    const STORAGE = {
+      best: "ccc_best_muldiv_1_12",
+      selection: "ccc_selected_muldiv_1_12",
+      stats: "ccc_family_stats_muldiv_1_12",
+      settings: "ccc_settings_muldiv_1_12"
+    };
+
+    const defaultSettings = { timerOn:true, progressOn:true };
+    let settings = loadJSON(STORAGE.settings, defaultSettings);
+    let familyStats = loadJSON(STORAGE.stats, {});
+    let best = Number(localStorage.getItem(STORAGE.best) || 0);
+
+    function loadJSON(key, fallback){
+      try{
+        const raw = localStorage.getItem(key);
+        if(!raw) return structuredClone(fallback);
+        const obj = JSON.parse(raw);
+        return obj ?? structuredClone(fallback);
+      }catch(e){
+        return structuredClone(fallback);
+      }
+    }
+    function saveJSON(key, value){
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    // ---------------------------
+    // DOM
+    // ---------------------------
+    const els = {
+      familyList: document.getElementById("familyList"),
+      selectedCount: document.getElementById("selectedCount"),
+      queueCount: document.getElementById("queueCount"),
+      btnStart: document.getElementById("btnStart"),
+      btnPick3: document.getElementById("btnPick3"),
+      btnClear: document.getElementById("btnClear"),
+
+      stepName: document.getElementById("stepName"),
+      equation: document.getElementById("equation"),
+      coverEq: document.getElementById("coverEq"),
+      revealFlash: document.getElementById("revealFlash"),
+      revealText: document.getElementById("revealText"),
+
+      answer: document.getElementById("answer"),
+      btnCheck: document.getElementById("btnCheck"),
+      btnShow: document.getElementById("btnShow"),
+      feedback: document.getElementById("feedback"),
+
+      score: document.getElementById("score"),
+      streak: document.getElementById("streak"),
+      best: document.getElementById("best"),
+
+      btnNew: document.getElementById("btnNew"),
+      btnReset: document.getElementById("btnReset"),
+
+      startHint: document.getElementById("startHint"),
+
+      symMul: document.getElementById("symMul"),
+      symDiv: document.getElementById("symDiv"),
+      symEq: document.getElementById("symEq"),
+      symBksp: document.getElementById("symBksp"),
+      symClear: document.getElementById("symClear"),
+
+      timer: document.getElementById("timer"),
+      btnTimerToggle: document.getElementById("btnTimerToggle"),
+
+      recommendation: document.getElementById("recommendation"),
+      level: document.getElementById("level"),
+      btnProgressToggle: document.getElementById("btnProgressToggle"),
+    };
+
+    // ---------------------------
+    // APP STATE
+    // ---------------------------
+    let families = [];
+    let familiesById = new Map();
+    let selected = new Set();
+    let queue = [];
+    let current = null;
+
+    let mode = "idle"; // idle | copy | cover
+    let score = 0;
+    let streak = 0;
+
+    // Cover-timer
+    let coverStart = null;
+    let coverTimerInterval = null;
+    let coverWrongCount = 0;
+
+    // Reveal
+    let revealTimer = null;
+    let showUnlocked = false;
+
+    // ---------------------------
+    // UTILS
+    // ---------------------------
+    const shuffle = (arr) => {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    };
+
+    const normalize = (s) => (s || "")
+      .replace(/\s+/g, "")
+      .replace(/×/g, "*")
+      .replace(/x/gi, "*")
+      .replace(/·/g, "*")
+      .replace(/÷/g, "/")
+      .replace(/:/g, "/")
+      .replace(/−/g, "-")
+      .replace(/–/g, "-");
+
+    function setFeedback(kind, msg){
+      els.feedback.style.display = "block";
+      els.feedback.className = "feedback " + (kind || "");
+      els.feedback.textContent = msg;
+    }
+    function clearFeedback(){
+      els.feedback.style.display = "none";
+      els.feedback.className = "feedback";
+      els.feedback.textContent = "";
+    }
+
+    function stopReveal(){
+      if(revealTimer) clearTimeout(revealTimer);
+      revealTimer = null;
+      els.revealFlash.classList.remove("show");
+      els.revealFlash.setAttribute("aria-hidden","true");
+    }
+
+    function setCover(on){
+      if(on){
+        els.coverEq.classList.remove("hidden");
+        els.coverEq.setAttribute("aria-hidden", "false");
+        els.equation.classList.add("blurred");
+      } else {
+        els.coverEq.classList.add("hidden");
+        els.coverEq.setAttribute("aria-hidden", "true");
+        els.equation.classList.remove("blurred");
+      }
+    }
+
+    function setSymbolButtonsEnabled(on){
+      els.symMul.disabled = !on;
+      els.symDiv.disabled = !on;
+      els.symEq.disabled = !on;
+      els.symBksp.disabled = !on;
+      els.symClear.disabled = !on;
+    }
+
+    function setShowButton(){
+      const enabled = (mode === "cover") && showUnlocked && !!current;
+      els.btnShow.disabled = !enabled;
+    }
+
+    function updateStatsUI(){
+      els.score.textContent = score;
+      els.streak.textContent = streak;
+      best = Math.max(best, score);
+      els.best.textContent = best;
+      localStorage.setItem(STORAGE.best, String(best));
+
+      els.selectedCount.textContent = selected.size;
+      els.queueCount.textContent = queue.length + (current ? 1 : 0);
+      els.startHint.style.opacity = selected.size ? 0 : 1;
+
+      updateRecommendationUI();
+      updateLevelUI();
+    }
+
+    // ---------------------------
+    // TIMER (cover-fase)
+    // ---------------------------
+    function resetTimerUI(){ els.timer.textContent = "0.0"; }
+
+    function stopCoverTimer(){
+      if(coverTimerInterval) clearInterval(coverTimerInterval);
+      coverTimerInterval = null;
+      const t = coverStart ? (performance.now() - coverStart) / 1000 : 0;
+      coverStart = null;
+      return t;
+    }
+
+    function startCoverTimer(){
+      stopCoverTimer();
+      resetTimerUI();
+      if(!settings.timerOn) return;
+      coverStart = performance.now();
+      coverTimerInterval = setInterval(()=>{
+        if(!coverStart) return;
+        const t = (performance.now() - coverStart) / 1000;
+        els.timer.textContent = t.toFixed(1);
+      }, 100);
+    }
+
+    // ---------------------------
+    // FAMILIER (gangfamilier 1–12, uten 0)
+    // family = (a,b,p), id = "a-b-p" der a<=b (unik)
+    // ---------------------------
+    function buildFamiliesMulDiv(max=12){
+      const out = [];
+      for(let a=1; a<=max; a++){
+        for(let b=a; b<=max; b++){
+          const p = a*b;
+          out.push({a,b,p,id:`${a}-${b}-${p}`});
+        }
+      }
+      return out;
+    }
+
+    function familyLabel(f){ return `${f.a}, ${f.b}, ${f.p}`; }
+
+    function equationsForFamily(f){
+      const {a,b,p} = f;
+      // Vi lager 4 oppgaver (× × ÷ ÷). Ingen 0.
+      return [
+        `${a}×${b}=${p}`,
+        `${b}×${a}=${p}`,
+        `${p}÷${a}=${b}`,
+        `${p}÷${b}=${a}`,
+      ];
+    }
+
+    // ---------------------------
+    // KATEGORI (grønn/gul/rød) per familie
+    // ---------------------------
+    const RECENT_N = 8;
+
+    function ensureFamStats(id){
+      if(!familyStats[id]){
+        familyStats[id] = { attempts:0, coverErrors:0, coverTimes:[], streak:0, last:[] };
+      }
+      return familyStats[id];
+    }
+
+    function avg(arr){
+      if(!arr || arr.length===0) return 0;
+      let s=0; for(const x of arr) s += x;
+      return s / arr.length;
+    }
+
+    function famRecent(id){
+      const s = familyStats[id];
+      if(!s || !s.last) return { times:[], errors:[] };
+      const last = s.last.slice(-RECENT_N);
+      return { times: last.map(x=>x.t), errors: last.map(x=>x.e) };
+    }
+
+    function famCategory(id){
+      const s = familyStats[id];
+      if(!s || s.attempts === 0) return "none";
+
+      const r = famRecent(id);
+      const avgT = avg(r.times);
+      const errRate = r.errors.length ? (r.errors.filter(e=>e>0).length / r.errors.length) : 0;
+
+      if(s.streak >= 5 && avgT > 0 && avgT <= 5.0) return "green";
+      if(errRate >= 0.40 || (avgT >= 10.0 && r.times.length >= 3)) return "red";
+      return "yellow";
+    }
+
+    function famMetaText(id){
+      const s = familyStats[id];
+      if(!s || s.attempts===0) return "ingen data";
+      const r = famRecent(id);
+      const avgT = avg(r.times);
+      const recentErrs = r.errors.filter(e=>e>0).length;
+      return `⌀ ${avgT.toFixed(1)}s · feil ${recentErrs}/${r.errors.length} · streak ${s.streak}`;
+    }
+
+    function updateFamilyAfterSuccess(familyId, coverTimeSeconds, coverErrorsThisTask){
+      const s = ensureFamStats(familyId);
+      s.attempts += 1;
+      s.coverErrors += coverErrorsThisTask;
+      s.coverTimes.push(coverTimeSeconds);
+      if(coverErrorsThisTask === 0) s.streak += 1; else s.streak = 0;
+      s.last.push({ t: coverTimeSeconds, e: coverErrorsThisTask });
+      if(s.last.length > 50) s.last = s.last.slice(-50);
+      familyStats[familyId] = s;
+      saveJSON(STORAGE.stats, familyStats);
+    }
+
+    // ---------------------------
+    // NIVÅ / PROGRESJON
+    // Nivå 1: maks faktor <=5
+    // Nivå 2: <=8
+    // Nivå 3: <=12
+    // ---------------------------
+    function familyLevel(f){
+      const m = Math.max(f.a, f.b);
+      if(m <= 5) return 1;
+      if(m <= 8) return 2;
+      return 3;
+    }
+
+    function unlockedLevel(){
+      let lvl = 1;
+      for(let check=1; check<=2; check++){
+        const inLevel = families.filter(f => familyLevel(f) === check);
+        if(inLevel.length === 0) continue;
+        const greenCount = inLevel.filter(f => famCategory(f.id) === "green").length;
+        const ratio = greenCount / inLevel.length;
+        if(ratio >= 0.80) lvl = check + 1; else break;
+      }
+      return Math.min(lvl, 3);
+    }
+
+    function updateLevelUI(){
+      els.level.textContent = String(unlockedLevel());
+    }
+
+    function isLockedByProgress(f){
+      if(!settings.progressOn) return false;
+      return familyLevel(f) > unlockedLevel();
+    }
+
+    // ---------------------------
+    // ANBEFALING (blant valgte)
+    // ---------------------------
+    function recommendationFamilyId(){
+      const chosen = [...selected].map(id => familiesById.get(id)).filter(Boolean);
+      const available = chosen.filter(f => !isLockedByProgress(f));
+      const pool = available.length ? available : chosen;
+      if(pool.length === 0) return null;
+
+      function scoreFamily(f){
+        const cat = famCategory(f.id);
+        const r = famRecent(f.id);
+        const avgT = avg(r.times);
+        const wrongs = r.errors.filter(e=>e>0).length;
+        const catWeight = (cat === "red") ? 0 : (cat === "yellow") ? 1 : (cat === "green") ? 2 : 1;
+        const perf = -(avgT * 0.8 + wrongs * 2.5);
+        return catWeight * 1000 + perf;
+      }
+
+      pool.sort((a,b)=> scoreFamily(a) - scoreFamily(b));
+      return pool[0].id;
+    }
+
+    function updateRecommendationUI(){
+      const id = recommendationFamilyId();
+      if(!id){ els.recommendation.textContent = "–"; return; }
+      const f = familiesById.get(id);
+      const cat = famCategory(id);
+      const tag = (cat==="green")?"🟢":(cat==="yellow")?"🟡":(cat==="red")?"🔴":"";
+      els.recommendation.textContent = `${tag} ${familyLabel(f)}  (${famMetaText(id)})`;
+    }
+
+    // ---------------------------
+    // FAMILY LIST
+    // ---------------------------
+    function drawFamilyList(){
+      els.familyList.innerHTML = "";
+
+      for(const f of families){
+        const locked = isLockedByProgress(f);
+        const cat = famCategory(f.id);
+        const catTag =
+          cat==="green" ? `<span class="tag green">Grønn</span>` :
+          cat==="yellow" ? `<span class="tag yellow">Gul</span>` :
+          cat==="red" ? `<span class="tag red">Rød</span>` :
+          `<span class="tag">Ny</span>`;
+        const lockTag = locked ? `<span class="tag lock">🔒 Nivå ${familyLevel(f)}</span>` : "";
+
+        const item = document.createElement("div");
+        item.className = "family";
+
+        const left = document.createElement("label");
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = selected.has(f.id);
+        cb.disabled = locked;
+        cb.addEventListener("change", () => {
+          if(cb.checked) selected.add(f.id);
+          else selected.delete(f.id);
+          persistSelection();
+          rebuildQueue();
+          drawFamilyList();
+        });
+
+        const text = document.createElement("div");
+        const code = document.createElement("code");
+        code.textContent = familyLabel(f);
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        const extra = (familyStats[f.id] && familyStats[f.id].attempts>0) ? ` · ${famMetaText(f.id)}` : "";
+        meta.textContent = `4 oppgaver · maks faktor ${Math.max(f.a,f.b)} · nivå ${familyLevel(f)}${extra}`;
+
+        text.appendChild(code);
+        text.appendChild(meta);
+
+        left.appendChild(cb);
+        left.appendChild(text);
+
+        const right = document.createElement("div");
+        right.innerHTML = `${catTag} ${lockTag}`;
+
+        item.appendChild(left);
+        item.appendChild(right);
+
+        els.familyList.appendChild(item);
+      }
+
+      updateStatsUI();
+    }
+
+    // ---------------------------
+    // SELECTION
+    // ---------------------------
+    function persistSelection(){ saveJSON(STORAGE.selection, [...selected]); }
+    function loadSelection(){
+      const arr = loadJSON(STORAGE.selection, []);
+      if(Array.isArray(arr)) selected = new Set(arr);
+    }
+
+    // ---------------------------
+    // QUEUE
+    // ---------------------------
+    function rebuildQueue(){
+      const picked = families.filter(f => selected.has(f.id));
+      const all = [];
+      for(const f of picked){
+        if(isLockedByProgress(f)) continue;
+        for(const eq of equationsForFamily(f)){
+          all.push({ eq, familyId: f.id });
+        }
+      }
+      shuffle(all);
+      queue = all;
+      current = null;
+      updateStatsUI();
+    }
+
+    // ---------------------------
+    // CCC FLOW
+    // ---------------------------
+    function setMode(newMode){
+      mode = newMode;
+
+      stopReveal();
+      showUnlocked = false;
+      setShowButton();
+
+      if(newMode !== "cover"){
+        stopCoverTimer();
+        resetTimerUI();
+      }
+
+      if(mode === "idle"){
+        els.stepName.textContent = "Velg familier";
+        els.equation.textContent = "—";
+        els.answer.value = "";
+        els.answer.disabled = true;
+        els.btnCheck.disabled = true;
+        els.btnNew.disabled = true;
+        els.btnShow.disabled = true;
+        setSymbolButtonsEnabled(false);
+        setCover(false);
+        clearFeedback();
+        return;
+      }
+
+      els.answer.disabled = false;
+      els.btnCheck.disabled = false;
+      els.btnNew.disabled = false;
+      els.answer.value = "";
+      clearFeedback();
+      setTimeout(()=>els.answer.focus(), 0);
+      setSymbolButtonsEnabled(true);
+
+      if(mode === "copy"){
+        els.stepName.textContent = "Copy (herm)";
+        setCover(false);
+        coverWrongCount = 0;
+      }
+      if(mode === "cover"){
+        els.stepName.textContent = "Cover (huske)";
+        setCover(true);
+        coverWrongCount = 0;
+        startCoverTimer();
+      }
+
+      setShowButton();
+    }
+
+    function nextTask(){
+      stopReveal();
+      showUnlocked = false;
+      setShowButton();
+
+      if(queue.length === 0){
+        current = null;
+        els.equation.textContent = "Ferdig! 🎉";
+        setFeedback("good", "Du er gjennom alle oppgavene i de valgte familiene (på dette nivået). Jobb mot grønt for å låse opp neste nivå.");
+        els.btnNew.disabled = true;
+        els.btnCheck.disabled = true;
+        els.btnShow.disabled = true;
+        els.answer.disabled = true;
+        setSymbolButtonsEnabled(false);
+        setCover(false);
+        stopCoverTimer();
+        resetTimerUI();
+        updateStatsUI();
+        drawFamilyList();
+        return;
+      }
+
+      current = queue.pop();
+      els.equation.textContent = current.eq;
+      setMode("copy");
+      updateStatsUI();
+    }
+
+    function startSession(){
+      if(selected.size === 0){
+        setFeedback("warn", "Velg minst 1 familie først.");
+        return;
+      }
+      score = 0;
+      streak = 0;
+      rebuildQueue();
+      clearFeedback();
+      nextTask();
+    }
+
+    function checkAnswer(){
+      if(!current){
+        setFeedback("warn", "Trykk Start økt først.");
+        return;
+      }
+
+      const correct = normalize(current.eq);
+      const typed = normalize(els.answer.value);
+
+      if(mode === "copy"){
+        if(typed === correct){
+          setFeedback("good", "Riktig. Nå skjuler vi regnestykket – skriv det igjen fra hukommelsen.");
+          setMode("cover");
+        } else {
+          setFeedback("bad", "Ikke helt. Herm nøyaktig (sjekk ×/÷/= og tall). Prøv igjen.");
+        }
+        return;
+      }
+
+      if(mode === "cover"){
+        if(typed === correct){
+          const t = stopCoverTimer();
+          resetTimerUI();
+
+          updateFamilyAfterSuccess(current.familyId, t, coverWrongCount);
+
+          score += 1;
+          if(coverWrongCount === 0) streak += 1; else streak = 0;
+
+          setFeedback("good", `YES! +1 poeng. ${coverWrongCount===0 ? "Feilfri ✅" : "Rettet opp ✅"}`);
+          updateStatsUI();
+          drawFamilyList();
+
+          setTimeout(() => {
+            clearFeedback();
+            nextTask();
+          }, 650);
+        } else {
+          coverWrongCount += 1;
+          streak = 0;
+          showUnlocked = true;
+          setShowButton();
+          updateStatsUI();
+          setFeedback("bad", "Feil. Skriv på nytt. (Du kan trykke «Vis» hvis du har glemt.)");
+        }
+        return;
+      }
+    }
+
+    function revealNow(){
+      if(!current) return;
+      if(!(mode === "cover" && showUnlocked)) return;
+
+      stopReveal();
+      els.revealText.textContent = current.eq;
+      els.revealFlash.classList.add("show");
+      els.revealFlash.setAttribute("aria-hidden","false");
+
+      revealTimer = setTimeout(() => {
+        stopReveal();
+        if(mode === "cover") setCover(true);
+      }, 1200);
+    }
+
+    function newTaskButton(){
+      if(!current){
+        setFeedback("warn", "Start økt først.");
+        return;
+      }
+      clearFeedback();
+      nextTask();
+    }
+
+    function resetAll(){
+      stopReveal();
+      stopCoverTimer();
+      resetTimerUI();
+
+      score = 0;
+      streak = 0;
+      queue = [];
+      current = null;
+      setMode("idle");
+      updateStatsUI();
+      drawFamilyList();
+    }
+
+    // ---------------------------
+    // SYMBOL KNAPPER (innsetting)
+    // ---------------------------
+    function insertAtCursor(text){
+      if(els.answer.disabled) return;
+      const el = els.answer;
+      const start = el.selectionStart ?? el.value.length;
+      const end = el.selectionEnd ?? el.value.length;
+      el.value = el.value.slice(0, start) + text + el.value.slice(end);
+      const pos = start + text.length;
+      el.setSelectionRange(pos, pos);
+      el.focus();
+    }
+
+    function backspaceAtCursor(){
+      const el = els.answer;
+      if(els.answer.disabled) return;
+      const start = el.selectionStart ?? el.value.length;
+      const end = el.selectionEnd ?? el.value.length;
+
+      if(start !== end){
+        el.value = el.value.slice(0, start) + el.value.slice(end);
+        el.setSelectionRange(start, start);
+      } else if(start > 0){
+        el.value = el.value.slice(0, start - 1) + el.value.slice(end);
+        el.setSelectionRange(start - 1, start - 1);
+      }
+      el.focus();
+    }
+
+    // ---------------------------
+    // SETTINGS UI
+    // ---------------------------
+    function syncSettingsUI(){
+      els.btnTimerToggle.textContent = settings.timerOn ? "På" : "Av";
+      els.btnProgressToggle.textContent = settings.progressOn ? "Progresjon: På" : "Progresjon: Av";
+      saveJSON(STORAGE.settings, settings);
+    }
+
+    // ---------------------------
+    // EVENTS
+    // ---------------------------
+    els.btnStart.addEventListener("click", startSession);
+    els.btnCheck.addEventListener("click", checkAnswer);
+    els.btnShow.addEventListener("click", revealNow);
+    els.btnNew.addEventListener("click", newTaskButton);
+    els.btnReset.addEventListener("click", resetAll);
+
+    els.answer.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") checkAnswer();
+    });
+
+    els.btnClear.addEventListener("click", () => {
+      selected.clear();
+      persistSelection();
+      rebuildQueue();
+      drawFamilyList();
+      resetAll();
+    });
+
+    els.btnPick3.addEventListener("click", () => {
+      selected.clear();
+      const available = families.filter(f => !isLockedByProgress(f));
+      const base = available.length ? available : families.slice();
+      shuffle(base);
+      base.slice(0, 3).forEach(f => selected.add(f.id));
+      persistSelection();
+      rebuildQueue();
+      drawFamilyList();
+      updateStatsUI();
+    });
+
+    els.symMul.addEventListener("click", () => insertAtCursor("×"));
+    els.symDiv.addEventListener("click", () => insertAtCursor("÷"));
+    els.symEq.addEventListener("click", () => insertAtCursor("="));
+    els.symBksp.addEventListener("click", backspaceAtCursor);
+    els.symClear.addEventListener("click", () => {
+      if(!els.answer.disabled){
+        els.answer.value="";
+        els.answer.focus();
+      }
+    });
+
+    els.btnTimerToggle.addEventListener("click", () => {
+      settings.timerOn = !settings.timerOn;
+      syncSettingsUI();
+      if(mode === "cover"){
+        if(settings.timerOn) startCoverTimer();
+        else { stopCoverTimer(); resetTimerUI(); }
+      }
+    });
+
+    els.btnProgressToggle.addEventListener("click", () => {
+      settings.progressOn = !settings.progressOn;
+      syncSettingsUI();
+
+      if(settings.progressOn){
+        const keep = [...selected].filter(id => {
+          const f = familiesById.get(id);
+          return f && !isLockedByProgress(f);
+        });
+        selected = new Set(keep);
+        persistSelection();
+      }
+
+      rebuildQueue();
+      drawFamilyList();
+      updateStatsUI();
+    });
+
+    // ---------------------------
+    // INIT
+    // ---------------------------
+    families = buildFamiliesMulDiv(12);
+    familiesById = new Map(families.map(f => [f.id, f]));
+
+    loadSelection();
+    selected = new Set([...selected].filter(id => familiesById.has(id)));
+
+    if(settings.progressOn){
+      selected = new Set([...selected].filter(id => {
+        const f = familiesById.get(id);
+        return f && !isLockedByProgress(f);
+      }));
+      persistSelection();
+    }
+
+    els.best.textContent = best;
+    syncSettingsUI();
+    rebuildQueue();
+    drawFamilyList();
+    setMode("idle");
+    updateStatsUI();
+  </script>
+</body>
+</html>
